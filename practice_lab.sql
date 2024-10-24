@@ -60,9 +60,12 @@ from EMPLOYEE e, DEPARTMENT d
 where e.Essn=d.Manager and e.Essn=101;
 
 -- iii. Find the name of all employees whose age is less than 18 years.
+-- this is wrong in employee table we dont have dob attribute so it will not work if you take dob then below query will work
 SELECT Ename
 FROM EMPLOYEE
-WHERE DATEDIFF(CURDATE(), date_of_join) < 25 * 365.25;
+WHERE DATEDIFF(CURDATE(), date_of_birth) < 18 * 365.25;
+
+
 
 -- iv. Find the DOB of the son of the employee having employee code ESSN 5078.
 select Dob
@@ -405,7 +408,443 @@ DELETE FROM STUDENT4
 WHERE USN = 'S001';
 select * from student4 where USN ='S001';
 
--- 8th one ----------------------------------------------
+
+
+
+-- 5TH one-------------------------------------------------------------------------------------------------------
+create table TEAM(
+	Teamid int(10) primary key,
+    Team_Name varchar(50) not null,
+    City varchar(50) not null,
+    Coach varchar(50) not null
+);
+
+
+
+
+create table PLAYER(
+	Player_id int(10) primary key,
+    Player_name varchar(50) not null,
+    Player_age int(10) not null,
+    Player_role varchar(50) not null,
+    Teamid int(10) not null,
+    foreign key (Teamid) references TEAM(Teamid)
+);
+
+create table STADIUM (
+	Std_id int(4) primary key,
+    Std_name varchar(100) not null,
+    city varchar(100) not null,
+    Std_area varchar(100) not null,
+    pincode varchar(100) not null
+);
+
+create table MATCH1(
+	Match_id int(10) primary key,
+    Match_name varchar(50) not null,
+    Result varchar(50) not null,
+    Man_of_match varchar(50) not null,
+    Date date not null,
+    Time time not null,
+    Teamid int(10) not null,
+    Std_id int(10) not null,
+    foreign key(Teamid) references TEAM (Teamid),
+    foreign key(Std_id)references STADIUM(Std_id)
+);
+
+create table PLAYER_PH(
+	Phone_NO int(10) not null,
+    Player_id int(4),
+    foreign key(Player_id) references PLAYER(Player_id)
+);
+
+-- Inserting data into TEAM table
+INSERT INTO TEAM (Teamid, Team_Name, City, Coach) VALUES
+(1, 'Warriors', 'Mumbai', 'John Smith'),
+(2, 'Titans', 'Delhi', 'David Jones'),
+(3, 'Eagles', 'Bangalore', 'Michael Clark'),
+(4, 'Knights', 'Chennai', 'Steve Brown'),
+(5, 'Dragons', 'Kolkata', 'James Adams');
+
+-- Inserting data into PLAYER table
+INSERT INTO PLAYER (Player_id, Player_name, Player_age, Player_role, Teamid) VALUES
+(1, 'Rahul Sharma', 22, 'Batsman', 1),
+(2, 'Amit Kumar', 23, 'Bowler', 1),
+(3, 'Vijay Singh', 21, 'All-Rounder', 2),
+(4, 'Sunil Patil', 25, 'Batsman', 2),
+(5, 'Anil Mehta', 24, 'Bowler', 3),
+(6, 'Rakesh Rao', 26, 'All-Rounder', 3),
+(7, 'Suresh Nair', 20, 'Batsman', 4),
+(8, 'Pravin Desai', 23, 'Wicketkeeper', 5);
+
+-- Inserting data into STADIUM table
+INSERT INTO STADIUM (Std_id, Std_name, city, Std_area, pincode) VALUES
+(1, 'Wankhede Stadium', 'Mumbai', 'Churchgate', '400020'),
+(2, 'Feroz Shah Kotla', 'Delhi', 'Bahadur Shah Zafar Marg', '110002'),
+(3, 'M. Chinnaswamy Stadium', 'Bangalore', 'MG Road', '560001'),
+(4, 'MA Chidambaram Stadium', 'Chennai', 'Triplicane', '600005'),
+(5, 'Eden Gardens', 'Kolkata', 'BBD Bagh', '700001');
+
+-- Inserting data into MATCH1 table
+INSERT INTO MATCH1 (Match_id, Match_name, Result, Man_of_match, Date, Time, Teamid, Std_id) VALUES
+(1, 'Warriors vs Titans', 'Warriors', 'Rahul Sharma', '2024-10-10', '14:30:00', 1, 1),
+(2, 'Eagles vs Dragons', 'Eagles', 'Anil Mehta', '2024-10-12', '15:00:00', 3, 3),
+(3, 'Knights vs Warriors', 'Warriors', 'Rahul Sharma', '2024-10-14', '16:00:00', 1, 4),
+(4, 'Dragons vs Titans', 'Dragons', 'Pravin Desai', '2024-10-15', '17:30:00', 5, 5),
+(5, 'Eagles vs Knights', 'Knights', 'Suresh Nair', '2024-10-18', '18:00:00', 4, 3);
+
+-- Inserting data into PLAYER_PH table
+INSERT INTO PLAYER_PH (Phone_NO, Player_id) VALUES
+(98765432, 1),
+(98765432, 2),
+(98765432, 3),
+(98765432, 4),
+(98765432, 5),
+(98765432, 6),
+(98765432, 7),
+(98765432, 8);
+
+
+-- i. Display the youngest player (in terms of age) Name, Team name, age in which he belongs of the tournament
+SELECT p.Player_name, t.Team_Name, p.Player_age
+FROM PLAYER p, TEAM t
+WHERE p.Teamid = t.Teamid
+ORDER BY p.Player_age ASC
+LIMIT 1;
+
+-- ii. List the details of the stadium where the maximum number of matches were played.
+SELECT s.Std_name, s.city, s.Std_area, s.pincode
+FROM STADIUM s, MATCH1 m
+WHERE s.Std_id = m.Std_id
+GROUP BY s.Std_id
+ORDER BY COUNT(m.Match_id) DESC
+LIMIT 1;
+
+-- iii. List the details of the player who is not a captain but got the man_of_the_match award at least in two matches:
+SELECT p.Player_name, p.Player_id, p.Player_age
+FROM PLAYER p, MATCH1 m
+WHERE p.Player_name = m.Man_of_match
+GROUP BY p.Player_name
+HAVING COUNT(m.Match_id) >= 2;
+
+-- iv. Display the Team details who won the maximum matches. 
+SELECT t.Team_Name, t.City, t.Coach
+FROM TEAM t, MATCH1 m
+WHERE t.Team_Name = m.Result
+GROUP BY t.Team_Name
+ORDER BY COUNT(m.Match_id) DESC
+LIMIT 1;
+
+-- v. Display the team name who won all of its matches played in the same stadium.
+SELECT t.Team_Name
+FROM TEAM t, MATCH1 m
+WHERE t.Team_Name = m.Result  
+GROUP BY t.Team_Name, m.Std_id
+HAVING COUNT(m.Match_id) = (
+    SELECT COUNT(m2.Match_id)
+    FROM MATCH1 m2
+    WHERE m2.Result = t.Team_Name 
+);
+
+
+-- 6th one-----------------------------------------------------------------------------------------------------
+create table ELECTION(
+	Ele_id int(5) primary key,
+	Ele_name varchar(100) not null,
+    Ele_Start_date date not null,
+    Ele_End_date date not null,
+    Ele_Type varchar(100) not null
+); 
+
+-- Inserting data into ELECTION table
+INSERT INTO ELECTION (Ele_id, Ele_name, Ele_Start_date, Ele_End_date, Ele_Type) VALUES
+(1, 'Karnataka Assembly Elections 2024', '2024-05-01', '2024-05-15', 'Assembly');
+
+create table CONSTITUTION(
+	Con_id int(5) primary key,
+	Con_name varchar(100) not null,
+    Con_state varchar(100) not null
+);
+
+-- Inserting data into CONSTITUTION table
+INSERT INTO CONSTITUTION (Con_id, Con_name, Con_state) VALUES
+(1, 'Bangalore South', 'Karnataka'),
+(2, 'Mysore', 'Karnataka'),
+(3, 'Hubli', 'Karnataka'),
+(4, 'Belgaum', 'Karnataka'),
+(5, 'Mangalore', 'Karnataka');
+
+
+create table PARTY(
+	Party_id int(5) primary key,
+	Party_name varchar(100) not null,
+    Party_symbol varchar(100) not null
+);
+
+-- Inserting data into PARTY table
+INSERT INTO PARTY (Party_id, Party_name, Party_symbol) VALUES
+(1, 'BJP', 'Lotus'),
+(2, 'Congress', 'Hand'),
+(3, 'JD(S)', 'Farmer'),
+(4, 'AAP', 'Broom');
+
+create table CANDIDATE(
+	Cand_id int(5) primary key,
+	Cand_name varchar(100) not null,
+    Cand_ph_no int(100) not null,
+    Cand_age int(3) not null,
+    Cand_state varchar(100) not null,
+	Party_id int(4),
+    foreign key(Party_id) references PARTY(Party_id)
+);
+
+-- Inserting data into CANDIDATE table
+INSERT INTO CANDIDATE (Cand_id, Cand_name, Cand_ph_no, Cand_age, Cand_state, Party_id) VALUES
+(1, 'Ravi Kumar', 98765432, 45, 'Karnataka', 1),
+(2, 'Suresh Reddy', 98765431, 50, 'Karnataka', 2),
+(3, 'Vinod Gowda', 98765432, 38, 'Karnataka', 3),
+(4, 'Anil Patil', 98765433, 42, 'Karnataka', 4);
+
+
+create table VOTER(
+	Voter_id int (5) primary key,
+    Voter_name varchar(100) not null,
+    Voter_age int (3) not null,
+    House_no int(5) not null,
+    City varchar (100) not null,
+    State varchar(1000) not null,
+    Pincode int(10) not null,
+    Cand_id int (5),
+    foreign key(Cand_id) references CANDIDATE(Cand_id)
+);
+
+-- Inserting data into VOTER table
+INSERT INTO VOTER (Voter_id, Voter_name, Voter_age, House_no, City, State, Pincode, Cand_id) VALUES
+(1, 'Rajesh Naik', 35, 101, 'Bangalore', 'Karnataka', 560001, 1),
+(2, 'Manjunath Gowda', 40, 102, 'Mysore', 'Karnataka', 570001, 2),
+(3, 'Sita Rao', 30, 103, 'Hubli', 'Karnataka', 580001, 3),
+(4, 'Priya Shetty', 28, 104, 'Mangalore', 'Karnataka', 575001, 4),
+(5, 'Kiran Rao', 19, 105, 'Bangalore', 'Karnataka', 560001, 1);
+
+
+create table CONTEST(
+	Con_id int(5),
+    Cand_id int(5),
+    date date,
+    primary key(Con_id ,Cand_id ,date),
+    foreign key(Con_id) references CONSTITUTION(Con_id),
+    foreign key(Cand_id ) references CANDIDATE(Cand_id)
+);
+
+
+-- Inserting data into CONTEST table
+INSERT INTO CONTEST (Con_id, Cand_id, date) VALUES
+(1, 1, '2024-05-10'),
+(2, 2, '2024-05-12'),
+(3, 3, '2024-05-13'),
+(4, 4, '2024-05-14');
+
+create table INVOLVES(
+	Con_id int(5),
+    Cand_id int(5),
+     primary key(Con_id ,Cand_id),
+    foreign key(Con_id) references CONSTITUTION(Con_id),
+    foreign key(Cand_id ) references CANDIDATE(Cand_id)
+);
+
+
+-- Inserting data into INVOLVES table
+INSERT INTO INVOLVES (Con_id, Cand_id) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4);
+
+-- i. List the details of the candidates who are contesting from more than one constituency which are belongs to different states. 
+SELECT c.Cand_name, c.Cand_state, COUNT(DISTINCT con.Con_state) AS StateCount
+FROM CANDIDATE c, INVOLVES i, CONSTITUTION con
+WHERE c.Cand_id = i.Cand_id AND i.Con_id = con.Con_id
+GROUP BY c.Cand_name
+HAVING StateCount > 1;
+
+-- ii. Display the state name having maximum number of constituencies.
+SELECT Con_state, COUNT(Con_id) AS TotalConstituencies
+FROM CONSTITUTION
+GROUP BY Con_state
+ORDER BY TotalConstituencies DESC
+LIMIT 1;
+
+
+-- 7th--------------------------------------------------------------------------------------------------------
+
+create table TOURIST_PLACE(
+	Tp_id int(4) primary key,
+    Tp_name varchar(100) not null,
+    Tp_State varchar(100) not null,
+    Tp_Captial varchar(100) not null,
+    Tp_Km int(5) not null,
+    Tp_History varchar(50) not null
+);
+
+-- Inserting data into TOURIST_PLACE
+INSERT INTO TOURIST_PLACE (Tp_id, Tp_name, Tp_State, Tp_Captial, Tp_Km, Tp_History) VALUES
+(1, 'Mysore Palace', 'Karnataka', 'Bangalore', 150, 'Royal Palace'),
+(2, 'Hampi', 'Karnataka', 'Bangalore', 350, 'Ancient Ruins'),
+(3, 'Taj Mahal', 'Uttar Pradesh', 'Lucknow', 200, 'Historical Monument'),
+(4, 'Red Fort', 'Delhi', 'New Delhi', 50, 'Historic Fort'),
+(5, 'Golden Temple', 'Punjab', 'Chandigarh', 300, 'Sikh Shrine');
+-- Adding more tourist places in different states
+INSERT INTO TOURIST_PLACE (Tp_id, Tp_name, Tp_State, Tp_Captial, Tp_Km, Tp_History) VALUES
+(6, 'Gateway of India', 'Maharashtra', 'Mumbai', 0, 'Iconic Landmark'),
+(7, 'Charminar', 'Telangana', 'Hyderabad', 0, 'Historical Monument'),
+(8, 'Jaisalmer Fort', 'Rajasthan', 'Jaisalmer', 0, 'Fortification'),
+(9, 'Victoria Memorial', 'West Bengal', 'Kolkata', 0, 'Cultural Heritage');
+
+create table TOURIST(
+	T_id int(4) primary key,
+    T_name varchar(100) not null,
+    T_age int(3) not null,
+    T_country varchar(100) not null
+);
+
+-- Inserting data into TOURIST
+INSERT INTO TOURIST (T_id, T_name, T_age, T_country) VALUES
+(1, 'John Doe', 35, 'USA'),
+(2, 'Amit Kumar', 40, 'India'),
+(3, 'Sarah Lee', 30, 'UK'),
+(4, 'Li Wei', 25, 'China'),
+(5, 'Carlos Lopez', 45, 'Spain');
+
+create table VISITEDBY(
+	Tp_id int(4),
+    T_id int(4),
+    Visit_date date,
+    primary key(Tp_id,T_id,Visit_date),
+    foreign key(Tp_id) references TOURIST_PLACE(Tp_id),
+    foreign key(T_id) references TOURIST(T_id)
+);
+
+-- Inserting data into VISITEDBY
+INSERT INTO VISITEDBY (Tp_id, T_id, Visit_date) VALUES
+(1, 1, '2024-01-10'),
+(2, 1, '2024-01-12'),
+(3, 2, '2024-01-15'),
+(4, 3, '2024-01-18'),
+(5, 4, '2024-01-20'),
+(1, 2, '2024-02-10'),
+(2, 3, '2024-02-15');
+
+
+
+-- Adding more tourist visits to those places
+INSERT INTO VISITEDBY (Tp_id, T_id, Visit_date) VALUES
+(6, 1, '2024-01-11'), -- John Doe visited Gateway of India
+(7, 2, '2024-01-16'), -- Amit Kumar visited Charminar
+(8, 3, '2024-01-19'), -- Sarah Lee visited Jaisalmer Fort
+(9, 4, '2024-01-21'); -- Li Wei visited Victoria Memorial
+
+
+create table TOURIST_EMAIL(
+	T_id int(4),
+    Email_id varchar(100) primary key ,
+    foreign key(T_id) references TOURIST(T_id)
+);
+
+-- Inserting data into TOURIST_EMAIL
+INSERT INTO TOURIST_EMAIL (T_id, Email_id) VALUES
+(1, 'john@example.com'),
+(2, 'amit@example.com'),
+(3, 'sarah@example.com'),
+(4, 'liwei@example.com'),
+(5, 'carlos@example.com');
+
+
+-- i. List the state name which is having maximum number of tourist places. 
+SELECT Tp_State, COUNT(Tp_id) AS TotalPlaces
+FROM TOURIST_PLACE
+GROUP BY Tp_State
+ORDER BY TotalPlaces DESC
+LIMIT 1;
+
+-- ii. List details of Tourist place where maximum number of tourists visited. 
+SELECT Tp.Tp_name, Tp.Tp_State, Tp.Tp_Captial, Tp.Tp_Km, Tp.Tp_History
+FROM TOURIST_PLACE Tp, VISITEDBY V
+WHERE Tp.Tp_id = V.Tp_id
+GROUP BY Tp.Tp_id
+ORDER BY COUNT(V.T_id) DESC
+LIMIT 1;
+
+-- iii. List the details of tourists visited all tourist places of the state “KARNATAKA”. 
+SELECT T.T_name, T.T_age, T.T_country
+FROM TOURIST T
+WHERE NOT EXISTS (
+    SELECT Tp.Tp_id
+    FROM TOURIST_PLACE Tp
+    WHERE Tp.Tp_State = 'Karnataka'
+    AND Tp.Tp_id NOT IN (
+        SELECT V.Tp_id
+        FROM VISITEDBY V
+        WHERE V.T_id = T.T_id
+    )
+);
+
+-- iv. Display the details of the tourists visited at least one tourist place of the state, but visited all states tourist places. 
+-- this query is not working
+SELECT DISTINCT T.T_id, T.T_name, T.T_age, T.T_country
+FROM TOURIST T
+WHERE EXISTS (
+    SELECT 1
+    FROM VISITEDBY V
+    JOIN TOURIST_PLACE Tp ON V.Tp_id = Tp.Tp_id
+    WHERE V.T_id = T.T_id
+)
+AND NOT EXISTS (
+    SELECT DISTINCT Tp.Tp_State
+    FROM TOURIST_PLACE Tp
+    WHERE NOT EXISTS (
+        SELECT 1
+        FROM VISITEDBY V2
+        WHERE V2.T_id = T.T_id AND V2.Tp_id IN (
+            SELECT Tp2.Tp_id
+            FROM TOURIST_PLACE Tp2
+            WHERE Tp2.Tp_State = Tp.Tp_State
+        )
+    )
+);
+-- atleast one tourist place in karnataka
+SELECT T.T_name, T.T_age, T.T_country
+FROM TOURIST T
+WHERE EXISTS (
+    SELECT 1
+    FROM VISITEDBY V
+    WHERE V.T_id = T.T_id AND V.Tp_id IN (
+        SELECT Tp_id FROM TOURIST_PLACE WHERE Tp_State = 'Karnataka'
+    )
+);
+
+
+
+
+
+
+-- v. Display the details of the tourist place visited by the tourists of all country
+-- this is also not working
+SELECT Tp.Tp_id, Tp.Tp_name, Tp.Tp_State, Tp.Tp_Captial, Tp.Tp_Km, Tp.Tp_History
+FROM TOURIST_PLACE Tp
+WHERE NOT EXISTS (
+    SELECT T.T_country
+    FROM TOURIST T
+    WHERE T.T_country NOT IN (
+        SELECT T2.T_country
+        FROM VISITEDBY V
+        JOIN TOURIST T2 ON V.T_id = T2.T_id
+        WHERE V.Tp_id = Tp.Tp_id
+    )
+);
+
+
+
+-- 8th one -----------------------------------------------------------------------------------------------------
 -- Create the STUDENT table
 CREATE TABLE STUDENT8 (
     regno VARCHAR(20) PRIMARY KEY,
